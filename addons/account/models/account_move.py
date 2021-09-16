@@ -882,8 +882,10 @@ class AccountMoveLine(models.Model):
         #Remove from recordset the one(s) that will be totally reconciled
         if amount_reconcile == sm_debit_move[field]:
             self -= sm_debit_move
+            self._prefetch[self._name].add(sm_debit_move.id)
         if amount_reconcile == -sm_credit_move[field]:
             self -= sm_credit_move
+            self._prefetch[self._name].add(sm_credit_move.id)
 
         #Check for the currency and amount_currency we can set
         currency = False
@@ -937,7 +939,10 @@ class AccountMoveLine(models.Model):
             raise UserError(_('The account %s (%s) is not marked as reconciliable !') % (all_accounts[0].name, all_accounts[0].code))
 
         #reconcile everything that can be
-        remaining_moves = self.auto_reconcile_lines()
+        with self.env.norecompute():
+            remaining_moves = self.auto_reconcile_lines()
+        for model_name in set(field.model_name for field in self.env.all.todo):
+            self.env[model_name].recompute()
 
         #if writeoff_acc_id specified, then create write-off move with value the remaining amount from move in self
         if writeoff_acc_id and writeoff_journal_id and remaining_moves:
