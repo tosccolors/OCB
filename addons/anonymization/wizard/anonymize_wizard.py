@@ -127,8 +127,8 @@ class IrModelFieldsAnonymizeWizard(models.TransientModel):
     def anonymize_database(self):
         """Sets the 'anonymized' state to defined fields"""
         # pylint: disable=W0101
-        raise UserError("""The Odoo Migration Platform no longer accepts anonymized databases.\n
-            If you wish for your data to remain private during migration, please contact us at upgrade@odoo.com""")
+#        raise UserError("""The Odoo Migration Platform no longer accepts anonymized databases.\n
+#            If you wish for your data to remain private during migration, please contact us at upgrade@odoo.com""")
         self.ensure_one()
 
         # create a new history record:
