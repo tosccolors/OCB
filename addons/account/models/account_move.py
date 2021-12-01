@@ -6,7 +6,7 @@ from odoo import api, fields, models, _
 from odoo.osv import expression
 from odoo.exceptions import RedirectWarning, UserError, ValidationError
 from odoo.tools.misc import formatLang
-from odoo.tools import float_is_zero, float_compare
+from odoo.tools import float_is_zero, float_compare, float_round
 from odoo.tools.safe_eval import safe_eval
 import odoo.addons.decimal_precision as dp
 from lxml import etree
@@ -1049,9 +1049,10 @@ class AccountMoveLine(models.Model):
         aml_id = False
         partial_rec_id = False
         maxdate = None
+        digits_rounding_precision = self[0].company_id.currency_id.rounding
         for aml in self:
-            total_debit += aml.debit
-            total_credit += aml.credit
+            total_debit += float_round(aml.debit, precision_rounding=digits_rounding_precision)
+            total_credit += float_round(aml.credit, precision_rounding=digits_rounding_precision)
             if aml.amount_residual_currency:
                 aml_to_balance_currency |= aml
             maxdate = max(aml.date, maxdate)
@@ -1072,7 +1073,6 @@ class AccountMoveLine(models.Model):
 
         partial_rec_ids = [x.id for x in list(partial_rec_set)]
         #if the total debit and credit are equal, and the total amount in currency is 0, the reconciliation is full
-        digits_rounding_precision = self[0].company_id.currency_id.rounding
         if float_compare(total_debit, total_credit, precision_rounding=digits_rounding_precision) == 0 \
           and (not currency or float_is_zero(total_amount_currency, precision_rounding=currency.rounding)):
             #in that case, mark the reference on the partial reconciliations and the entries
