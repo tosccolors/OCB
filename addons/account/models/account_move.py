@@ -855,7 +855,8 @@ class AccountMoveLine(models.Model):
         return debit, credit
 
     def auto_reconcile_lines(self):
-        """ This function iterates recursively on the recordset given as parameter as long as it
+        """ This function does [not iterate recursively anymore, because of backport from newer odoo version]
+            on the recordset given as parameter as long as it
             can find a debit and a credit to reconcile together. It returns the recordset of the
             account move lines that were not reconciled during the process.
         """
